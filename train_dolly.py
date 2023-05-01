@@ -94,6 +94,18 @@ dbutils.widgets.text("experiment_id", "", "experiment_id")
 
 # COMMAND ----------
 
+# %sh
+
+# cp /dbfs/FileStore/Users/yulan.yan/databricks_dbqa_jp.jsonl/part-00000-tid-1216644160145225669-d7617114-6f96-4156-9031-0cc12e142739-332-1-c000.json /Workspace/Repos/yulan.yan@databricks.com/dolly_v2_jp/data/databricks_dbqa_jp.jsonl
+
+# COMMAND ----------
+
+# %sh
+
+# cp /dbfs/FileStore/Users/yulan.yan/databricks_dolly_15k_dbqa_jp.jsonl/part-00000-tid-781169603951730171-03dfa3cc-ff4e-4e84-af03-00a9893fa7ce-331-1-c000.json /Workspace/Repos/yulan.yan@databricks.com/dolly_v2_jp/data/databricks_dolly_15k_dbqa_jp_16k.jsonl
+
+# COMMAND ----------
+
 # Cache data and tokenizer locally before creating a bunch of deepspeed processes and make sure they succeeds.
 load_training_dataset()
 load_tokenizer()
@@ -101,7 +113,7 @@ load_tokenizer()
 # COMMAND ----------
 
 timestamp = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
-model_name = "dolly"
+model_name = "dolly_jp"
 
 experiment_id = dbutils.widgets.get("experiment_id")
 input_model = dbutils.widgets.get("input_model")
@@ -115,7 +127,7 @@ checkpoint_dir_name = f"{model_name}__{timestamp}"
 root_path = os.getcwd()
 deepspeed_config = os.path.join(root_path, "config/ds_z3_bf16_config.json")
 
-dolly_training_dir_name = "dolly_training"
+dolly_training_dir_name = "dolly_training_jp"
 
 # Use the local training root path if it was provided.  Otherwise try to find a sensible default.
 local_training_root = dbutils.widgets.get("local_training_root")
@@ -158,22 +170,22 @@ os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 # COMMAND ----------
 
-# MAGIC !deepspeed {num_gpus_flag} \
-# MAGIC     --module training.trainer \
-# MAGIC     --input-model {input_model} \
-# MAGIC     --deepspeed {deepspeed_config} \
-# MAGIC     --epochs 2 \
-# MAGIC     --local-output-dir {local_output_dir} \
-# MAGIC     --dbfs-output-dir {dbfs_output_dir} \
-# MAGIC     --per-device-train-batch-size 6 \
-# MAGIC     --per-device-eval-batch-size 6 \
-# MAGIC     --logging-steps 10 \
-# MAGIC     --save-steps 200 \
-# MAGIC     --save-total-limit 20 \
-# MAGIC     --eval-steps 50 \
-# MAGIC     --warmup-steps 50 \
-# MAGIC     --test-size 200 \
-# MAGIC     --lr 5e-6
+!deepspeed {num_gpus_flag} \
+    --module training.trainer \
+    --input-model {input_model} \
+    --deepspeed {deepspeed_config} \
+    --epochs 2 \
+    --local-output-dir {local_output_dir} \
+    --dbfs-output-dir {dbfs_output_dir} \
+    --per-device-train-batch-size 6 \
+    --per-device-eval-batch-size 6 \
+    --logging-steps 10 \
+    --save-steps 200 \
+    --save-total-limit 20 \
+    --eval-steps 50 \
+    --warmup-steps 50 \
+    --test-size 200 \
+    --lr 5e-6
 
 # COMMAND ----------
 
@@ -185,11 +197,13 @@ model, tokenizer = load_model_tokenizer_for_generate(local_output_dir)
 
 # Examples from https://www.databricks.com/blog/2023/03/24/hello-dolly-democratizing-magic-chatgpt-open-models.html
 instructions = [
-    "Write a love letter to Edgar Allan Poe.",
-    "Write a tweet announcing Dolly, a large language model from Databricks.",
-    "I'm selling my Nikon D-750, write a short blurb for my ad.",
-    "Explain to me the difference between nuclear fission and fusion.",
-    "Give me a list of 5 science fiction books I should read next.",
+    "AutoMLでモデルを解釈できますか？",
+    "データレイクハウスとは何ですか?",
+    "AutoMLで回帰モデルを作れますか？",
+    "AutoMLではFeature Storeのテーブルをサポートしていますか？",
+    "分散機械学習をどのように行うか?",
+    "データレイクハウスとデータウェアハウスの違いは?",
+    "MLOpsのベストプラクティスについて教えてください。",
 ]
 
 # Use the model to generate responses for each of the instructions above.
