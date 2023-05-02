@@ -1,9 +1,34 @@
-DEFAULT_INPUT_MODEL = "EleutherAI/pythia-6.9b"
+DEFAULT_INPUT_MODEL = "rinna/japanese-gpt-1b"
 SUGGESTED_INPUT_MODELS = [
-    "EleutherAI/pythia-2.8b",
-    "EleutherAI/pythia-6.9b",
-    "EleutherAI/pythia-12b",
-    "EleutherAI/gpt-j-6B",
+    "rinna/japanese-gpt-1b",
+    "ai-forever/mGPT", # local_output_dir = "/dbfs/dolly_training_jp/dolly_jp__2023-05-01T16:51:59" : May 2 2023, 08:32 AM JST
+    "rinna/japanese-gpt2-medium",
+    "abeja/gpt2-large-japanese",
+    "abeja/gpt-neox-japanese-2.7b",
+    "facebook/xglm-7.5B", # Could not find response key error
+    "facebook/xglm-1.7B", # Could not find response key error
+    "inu-ai/dolly-japanese-gpt-1b", # load_tokenizer() error
+    "Tanrei/GPTSAN-japanese", # Unrecognized configuration class error
+    "hajime9652/xlnet-japanese", # Couldn't instantiate the backend tokenizer
+    "NovelAI/genji-jp",
+    "oshizo/qa-refine-japanese-gpt-1b",
+    "yellowback/gpt-neo-japanese-1.3B", # /dbfs/dolly_training_jp/dolly_jp__2023-05-02T04:43:20 : May 2 2023, 13:43 PM JST
+    "Aruno/Bloom-JP-160m", # Got unexpected arguments: {'token_type_ids': tensor([[0, 0, 0,  ..., 0, 0, 0],
+    "bigscience/bloom-7b1", # /dbfs/dolly_training_jp/dolly_jp__2023-05-02T04:53:35  : May 2 2023, 14:06 PM JST
+    "jweb/japanese-soseki-gpt2-1b", # Couldn't instantiate the backend tokenizer from one of: 
+    "skytnt/gpt2-japanese-lyric-medium", 
+    "skytnt/gpt2-japanese-lyric-small",
+    "knok/japanese-distilgpt2", 
+    "naclbit/gpt-j-japanese-6.8b", # apache-2.0 license : Couldn't instantiate the backend tokenizer from one of:
+    "thefrigidliquidation/pythia-1b-lightnovels",
+    "colorfulscoop/gpt2-small-ja", # cc license
+    "KBlueLeaf/guanaco-7B-leh", # gpl-3.0 license
+    "KBlueLeaf/guanaco-7b-leh-v2", # gpl-3.0 license : Tokenizer class LLaMATokenizer does not exist
+    "okazaki-lab/japanese-gpt2-medium-unidic", #cc license
+    "nlp-waseda/gpt2-xl-japanese",  #cc license : /dbfs/dolly_training_jp/dolly_jp__2023-05-02T05:30:17 : May 2 2023, 14:30 PM JST
+    "nlp-waseda/gpt2-small-japanese-wikipedia", #cc license
+    "ku-nlp/gpt2-small-japanese-char", # cc license
+    "pythainlp/wangchanglm-7.5B-sft-en-sharded", # cc license : Could not find response key [2, 256010]
 ]
 INTRO_BLURB = (
     "Below is an instruction that describes a task. Write a response that appropriately completes the request."
