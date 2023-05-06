@@ -1,4 +1,4 @@
-DEFAULT_INPUT_MODEL = "rinna/japanese-gpt-1b"
+DEFAULT_INPUT_MODEL = "abeja/gpt-neox-japanese-2.7b"
 SUGGESTED_INPUT_MODELS = [
     "rinna/japanese-gpt-1b",
     "ai-forever/mGPT", # local_output_dir = "/dbfs/dolly_training_jp/dolly_jp__2023-05-01T16:51:59" : May 2 2023, 08:32 AM JST
@@ -29,6 +29,7 @@ SUGGESTED_INPUT_MODELS = [
     "nlp-waseda/gpt2-small-japanese-wikipedia", #cc license
     "ku-nlp/gpt2-small-japanese-char", # cc license
     "pythainlp/wangchanglm-7.5B-sft-en-sharded", # cc license : Could not find response key [2, 256010]
+    "mosaicml/mpt-7b" # apache-2.0 license
 ]
 INTRO_BLURB = (
     "Below is an instruction that describes a task. Write a response that appropriately completes the request."

@@ -113,7 +113,7 @@ load_tokenizer()
 # COMMAND ----------
 
 timestamp = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
-model_name = "dolly_jp"
+model_name = "abeja_gpt-neox-japanese-2.7b"
 
 experiment_id = dbutils.widgets.get("experiment_id")
 input_model = dbutils.widgets.get("input_model")
@@ -127,7 +127,7 @@ checkpoint_dir_name = f"{model_name}__{timestamp}"
 root_path = os.getcwd()
 deepspeed_config = os.path.join(root_path, "config/ds_z3_bf16_config.json")
 
-dolly_training_dir_name = "dolly_training_jp"
+dolly_training_dir_name = "abeja_gpt-neox-japanese-2.7b_dbqa"
 
 # Use the local training root path if it was provided.  Otherwise try to find a sensible default.
 local_training_root = dbutils.widgets.get("local_training_root")
@@ -177,8 +177,8 @@ os.environ["TOKENIZERS_PARALLELISM"] = "false"
     --epochs 2 \
     --local-output-dir {local_output_dir} \
     --dbfs-output-dir {dbfs_output_dir} \
-    --per-device-train-batch-size 6 \
-    --per-device-eval-batch-size 6 \
+    --per-device-train-batch-size 1 \
+    --per-device-eval-batch-size 1 \
     --logging-steps 10 \
     --save-steps 200 \
     --save-total-limit 20 \
@@ -188,6 +188,7 @@ os.environ["TOKENIZERS_PARALLELISM"] = "false"
     --lr 5e-6
 
 # COMMAND ----------
+
 
 from training.generate import generate_response, load_model_tokenizer_for_generate
 
