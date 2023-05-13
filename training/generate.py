@@ -6,7 +6,7 @@ import torch
 import numpy as np
 from transformers import (
     AutoModelForCausalLM,
-    AutoTokenizer,
+    T5Tokenizer,
     Pipeline,
     PreTrainedModel,
     PreTrainedTokenizer,
@@ -33,7 +33,7 @@ def load_model_tokenizer_for_generate(
     Returns:
         Tuple[PreTrainedModel, PreTrainedTokenizer]: model and tokenizer
     """
-    tokenizer = AutoTokenizer.from_pretrained(pretrained_model_name_or_path, padding_side="left")
+    tokenizer = T5Tokenizer.from_pretrained(pretrained_model_name_or_path)
     model = AutoModelForCausalLM.from_pretrained(
         pretrained_model_name_or_path, device_map="auto", torch_dtype=torch.bfloat16, trust_remote_code=True
     )
@@ -191,14 +191,14 @@ class InstructionTextGenerationPipeline(Pipeline):
 
                 # The response appears after "### Response:".  The model has been trained to append "### End" at the
                 # end.
-                m = re.search(r"#+\s*Response:\s*(.+?)#+\s*End", fully_decoded, flags=re.DOTALL)
+                m = re.search(r"#+\s*応答:\s*(.+?)#+\s*終了", fully_decoded, flags=re.DOTALL)
 
                 if m:
                     decoded = m.group(1).strip()
                 else:
                     # The model might not generate the "### End" sequence before reaching the max tokens.  In this case,
-                    # return everything after "### Response:".
-                    m = re.search(r"#+\s*Response:\s*(.+)", fully_decoded, flags=re.DOTALL)
+                    # return everything after "### 応答:".
+                    m = re.search(r"#+\s*応答:\s*(.+)", fully_decoded, flags=re.DOTALL)
                     if m:
                         decoded = m.group(1).strip()
                     else:

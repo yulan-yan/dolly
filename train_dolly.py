@@ -1,4 +1,5 @@
 # Databricks notebook source
+# DBTITLE 1,gbrckkvrbilckiuudfluekii
 # MAGIC %md
 # MAGIC ## Train Dolly
 # MAGIC
@@ -94,26 +95,15 @@ dbutils.widgets.text("experiment_id", "", "experiment_id")
 
 # COMMAND ----------
 
-# %sh
-
-# cp /dbfs/FileStore/Users/yulan.yan/databricks_dbqa_jp.jsonl/part-00000-tid-1216644160145225669-d7617114-6f96-4156-9031-0cc12e142739-332-1-c000.json /Workspace/Repos/yulan.yan@databricks.com/dolly_v2_jp/data/databricks_dbqa_jp.jsonl
-
-# COMMAND ----------
-
-# %sh
-
-# cp /dbfs/FileStore/Users/yulan.yan/databricks_dolly_15k_dbqa_jp.jsonl/part-00000-tid-781169603951730171-03dfa3cc-ff4e-4e84-af03-00a9893fa7ce-331-1-c000.json /Workspace/Repos/yulan.yan@databricks.com/dolly_v2_jp/data/databricks_dolly_15k_dbqa_jp_16k.jsonl
-
-# COMMAND ----------
-
 # Cache data and tokenizer locally before creating a bunch of deepspeed processes and make sure they succeeds.
 load_training_dataset()
 load_tokenizer()
 
 # COMMAND ----------
 
-timestamp = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
-model_name = "abeja_gpt-neox-japanese-2.7b"
+
+timestamp = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
+model_name = "rinna-gpt-1b_dolly15k_dbqa"
 
 experiment_id = dbutils.widgets.get("experiment_id")
 input_model = dbutils.widgets.get("input_model")
@@ -127,7 +117,7 @@ checkpoint_dir_name = f"{model_name}__{timestamp}"
 root_path = os.getcwd()
 deepspeed_config = os.path.join(root_path, "config/ds_z3_bf16_config.json")
 
-dolly_training_dir_name = "abeja_gpt-neox-japanese-2.7b_dbqa"
+dolly_training_dir_name = "rinna-gpt-1b_dolly15k_dbqa_training"
 
 # Use the local training root path if it was provided.  Otherwise try to find a sensible default.
 local_training_root = dbutils.widgets.get("local_training_root")
@@ -141,7 +131,7 @@ if not local_training_root:
 
 dbfs_output_root = dbutils.widgets.get("dbfs_output_root")
 if not dbfs_output_root:
-    dbfs_output_root = f"/dbfs/{dolly_training_dir_name}"
+    dbfs_output_root = f"/dbfs/Users/yulan.yan@databricks.com/{dolly_training_dir_name}"
 
 os.makedirs(local_training_root, exist_ok=True)
 os.makedirs(dbfs_output_root, exist_ok=True)
@@ -177,8 +167,8 @@ os.environ["TOKENIZERS_PARALLELISM"] = "false"
     --epochs 2 \
     --local-output-dir {local_output_dir} \
     --dbfs-output-dir {dbfs_output_dir} \
-    --per-device-train-batch-size 1 \
-    --per-device-eval-batch-size 1 \
+    --per-device-train-batch-size 6 \
+    --per-device-eval-batch-size 6 \
     --logging-steps 10 \
     --save-steps 200 \
     --save-total-limit 20 \
@@ -189,15 +179,63 @@ os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 # COMMAND ----------
 
+from transformers import T5Tokenizer, AutoModelForCausalLM
 
-from training.generate import generate_response, load_model_tokenizer_for_generate
-
-model, tokenizer = load_model_tokenizer_for_generate(local_output_dir)
+tokenizer = T5Tokenizer.from_pretrained(local_output_dir)
+model = AutoModelForCausalLM.from_pretrained(local_output_dir)
 
 # COMMAND ----------
 
-# Examples from https://www.databricks.com/blog/2023/03/24/hello-dolly-democratizing-magic-chatgpt-open-models.html
-instructions = [
+import torch
+
+MAX_ASSISTANT_LENGTH = 100
+MAX_INPUT_LENGTH = 1024
+
+INPUT_PROMPT = r'以下は、タスクを説明する指示です。要求を適切に満たす応答を書きなさい。\n\n### 指示:\n{instruction}\n\n### 入力:\n{input}\n\n### 応答:\n'
+NO_INPUT_PROMPT = r'以下は、タスクを説明する指示です。要求を適切に満たす応答を書きなさい。\n\n### 指示:\n{instruction}\n\n### 応答:\n'
+
+def prepare_input(instruction, input_text):
+    if input_text != "":
+        prompt = INPUT_PROMPT.format(instruction=instruction, input=input_text)
+    else:
+        prompt = NO_INPUT_PROMPT.format(instruction=instruction)
+    return prompt
+
+def format_output(output):
+    output = output.lstrip("<s>").rstrip("</s>").replace("[SEP]", "").replace("\\n", "\n")
+    return output
+
+def generate_response(instruction, input_text):
+    prompt = prepare_input(instruction, input_text)
+    token_ids = tokenizer.encode(prompt, add_special_tokens=False, return_tensors="pt")
+    n = len(token_ids[0])
+
+    with torch.no_grad():
+        output_ids = model.generate(
+            token_ids.to(model.device),
+            min_length=n,
+            max_length=min(MAX_INPUT_LENGTH, n + MAX_ASSISTANT_LENGTH),
+            temperature=0.7,
+            do_sample=True,
+            pad_token_id=tokenizer.pad_token_id,
+            bos_token_id=tokenizer.bos_token_id,
+            eos_token_id=tokenizer.eos_token_id,
+            bad_words_ids=[[tokenizer.unk_token_id]]
+        )
+
+    output = tokenizer.decode(output_ids.tolist()[0])
+    formatted_output_all = format_output(output)
+    response = f"Assistant:{formatted_output_all.split('応答:')[-1].strip()}"
+
+    return formatted_output_all, response 
+
+# instruction = "あなたは何でも正確に答えられるAIです。"
+questions = [
+    "日本で一番高い山は？",
+    "日本で一番広い湖は？",
+    "世界で一番高い山は？",
+    "世界で一番広い湖は？",
+    "機械学習とは？",
     "AutoMLでモデルを解釈できますか？",
     "データレイクハウスとは何ですか?",
     "AutoMLで回帰モデルを作れますか？",
@@ -207,11 +245,11 @@ instructions = [
     "MLOpsのベストプラクティスについて教えてください。",
 ]
 
-# Use the model to generate responses for each of the instructions above.
-for instruction in instructions:
-    response = generate_response(instruction, model=model, tokenizer=tokenizer)
-    if response:
-        print(f"Instruction: {instruction}\n\n{response}\n\n-----------\n")
+# 各質問に対して応答を生成して表示
+for question in questions:
+    formatted_output_all, response = generate_response(question, "")
+    print(f"Question: {question}\n\n{response}\n\n-----------\n")
+
 
 # COMMAND ----------
 

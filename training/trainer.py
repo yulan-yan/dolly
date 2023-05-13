@@ -22,7 +22,7 @@ import numpy as np
 from datasets import Dataset, load_dataset
 from transformers import (
     AutoModelForCausalLM,
-    AutoTokenizer,
+    T5Tokenizer,
     DataCollatorForLanguageModeling,
     PreTrainedTokenizer,
     Trainer,
@@ -42,7 +42,7 @@ from .consts import (
 
 logger = logging.getLogger(__name__)
 ROOT_PATH = Path(__file__).parent.parent
-DATABRICKS_DOLLY_15K_PATH = ROOT_PATH / "data" / "databricks_dbqa_jp.jsonl"  # "databricks_dolly_15k_dbqa_jp_16k.jsonl"
+DATABRICKS_DOLLY_15K_PATH = "/dbfs/Users/yulan.yan@databricks.com/qa_dataset/dolly15k_dbqa.jsonl" #"dbqa.jsonl" #ROOT_PATH / "data" / "databricks_dbqa_jp.jsonl"  # "databricks_dolly_15k_dbqa_jp_16k.jsonl"
 
 class DataCollatorForCompletionOnlyLM(DataCollatorForLanguageModeling):
     def torch_call(self, examples: List[Union[List[int], Any, Dict[str, Any]]]) -> Dict[str, Any]:
@@ -76,7 +76,7 @@ class DataCollatorForCompletionOnlyLM(DataCollatorForLanguageModeling):
         return batch
 
 
-def preprocess_batch(batch: Dict[str, List], tokenizer: AutoTokenizer, max_length: int) -> dict:
+def preprocess_batch(batch: Dict[str, List], tokenizer: T5Tokenizer, max_length: int) -> dict:
     return tokenizer(
         batch["text"],
         max_length=max_length,
@@ -118,7 +118,7 @@ def load_training_dataset() -> Dataset:
 
 def load_tokenizer(pretrained_model_name_or_path: str = DEFAULT_INPUT_MODEL) -> PreTrainedTokenizer:
     logger.info(f"Loading tokenizer for {pretrained_model_name_or_path}")
-    tokenizer = AutoTokenizer.from_pretrained(pretrained_model_name_or_path)
+    tokenizer = T5Tokenizer.from_pretrained(pretrained_model_name_or_path)
     tokenizer.pad_token = tokenizer.eos_token
     tokenizer.add_special_tokens({"additional_special_tokens": [END_KEY, INSTRUCTION_KEY, RESPONSE_KEY_NL]})
     return tokenizer
@@ -144,11 +144,11 @@ def get_model_tokenizer(
     return model, tokenizer
 
 
-def preprocess_dataset(tokenizer: AutoTokenizer, max_length: int, seed=DEFAULT_SEED) -> Dataset:
+def preprocess_dataset(tokenizer: T5Tokenizer, max_length: int, seed=DEFAULT_SEED) -> Dataset:
     """Loads the training dataset and tokenizes it so it is ready for training.
 
     Args:
-        tokenizer (AutoTokenizer): Tokenizer tied to the model.
+        tokenizer (T5Tokenizer): Tokenizer tied to the model.
         max_length (int): Maximum number of tokens to emit from tokenizer.
 
     Returns:
