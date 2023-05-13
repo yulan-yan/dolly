@@ -1,3 +1,7 @@
+# dolly_jp
+
+英語版Dollyのトレーニングコードを使用して、rinna/japanese-gpt-1bをファインチューニングした日本語モデルの例です。
+
 # Dolly
 
 Databricks’ [Dolly](https://huggingface.co/databricks/dolly-v2-12b) is an instruction-following large language model trained on the Databricks machine learning platform
