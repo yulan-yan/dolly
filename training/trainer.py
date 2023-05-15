@@ -42,7 +42,7 @@ from .consts import (
 
 logger = logging.getLogger(__name__)
 ROOT_PATH = Path(__file__).parent.parent
-DATABRICKS_DOLLY_15K_PATH = "/dbfs/Users/yulan.yan@databricks.com/qa_dataset/dolly15k_dbqa.jsonl" #"dbqa.jsonl" #ROOT_PATH / "data" / "databricks_dbqa_jp.jsonl"  # "databricks_dolly_15k_dbqa_jp_16k.jsonl"
+DATABRICKS_DOLLY_15K_PATH = ROOT_PATH / "data" / "dolly15k_dbqa.jsonl" 
 
 class DataCollatorForCompletionOnlyLM(DataCollatorForLanguageModeling):
     def torch_call(self, examples: List[Union[List[int], Any, Dict[str, Any]]]) -> Dict[str, Any]:
