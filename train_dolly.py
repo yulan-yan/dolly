@@ -87,7 +87,7 @@ from datetime import datetime
 from training.consts import DEFAULT_INPUT_MODEL, SUGGESTED_INPUT_MODELS
 from training.trainer import load_training_dataset, load_tokenizer
 
-dbutils.widgets.combobox("input_model", "DEFAULT_INPUT_MODEL", "SUGGESTED_INPUT_MODELS", "input_model")
+dbutils.widgets.combobox("input_model", DEFAULT_INPUT_MODEL, "SUGGESTED_INPUT_MODELS", "input_model")
 dbutils.widgets.text("num_gpus", "", "num_gpus")
 dbutils.widgets.text("local_training_root", "", "local_training_root")
 dbutils.widgets.text("dbfs_output_root", "", "dbfs_output_root")
