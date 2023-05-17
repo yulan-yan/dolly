@@ -164,7 +164,7 @@ os.environ["TOKENIZERS_PARALLELISM"] = "false"
     --module training.trainer \
     --input-model {input_model} \
     --deepspeed {deepspeed_config} \
-    --epochs 2 \
+    --epochs 10 \
     --local-output-dir {local_output_dir} \
     --dbfs-output-dir {dbfs_output_dir} \
     --per-device-train-batch-size 6 \
@@ -175,7 +175,7 @@ os.environ["TOKENIZERS_PARALLELISM"] = "false"
     --eval-steps 50 \
     --warmup-steps 50 \
     --test-size 200 \
-    --lr 5e-6
+    --lr 1e-07
 
 # COMMAND ----------
 
